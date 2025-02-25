@@ -5,13 +5,11 @@ import '../../domain/entities/water_tariff.dart';
 class WaterResultCard extends StatelessWidget {
   final double usage;
   final WaterSubscriptionGroup group;
-  final double totalBill;
 
   const WaterResultCard({
     super.key,
     required this.usage,
     required this.group,
-    required this.totalBill,
   });
 
   @override
@@ -27,6 +25,9 @@ class WaterResultCard extends StatelessWidget {
     final bloc1Cost = bloc1Usage * bloc1Rate;
     final bloc2Cost = bloc2Usage * bloc2Rate;
     final bloc3Cost = bloc3Usage * bloc3Rate;
+
+    // Gunakan calculateBill untuk konsistensi perhitungan
+    final calculatedTotalBill = WaterTariff.calculateBill(group, usage);
 
     return Card(
       elevation: 4,
@@ -68,14 +69,15 @@ class WaterResultCard extends StatelessWidget {
             const Divider(height: 16),
             _buildResultRow(
                 'Biaya Admin', 'Rp ${_formatNumber(WaterTariff.adminCharge)}'),
-            _buildResultRow('Biaya Pemeliharaan',
-                'Rp ${_formatNumber(WaterTariff.maintenanceCharge)}'),
-            _buildResultRow(
-                'Biaya Meter', 'Rp ${_formatNumber(WaterTariff.meterCharge)}'),
+            // _buildResultRow('Biaya Pemeliharaan',
+            //     'Rp ${_formatNumber(WaterTariff.maintenanceCharge)}'),
+            // _buildResultRow(
+            //     'Biaya Meter', 'Rp ${_formatNumber(WaterTariff.meterCharge)}'),
             const Divider(height: 16),
             _buildResultRow(
                 'Total Pemakaian', '${usage.toStringAsFixed(1)} m³'),
-            _buildResultRow('Total Tagihan', 'Rp ${_formatNumber(totalBill)}',
+            _buildResultRow(
+                'Total Tagihan', 'Rp ${_formatNumber(calculatedTotalBill)}',
                 isBold: true),
             const Divider(height: 32),
             Text(

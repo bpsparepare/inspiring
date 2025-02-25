@@ -9,11 +9,9 @@ class ScannerPage extends StatefulWidget {
 }
 
 class _ScannerPageState extends State<ScannerPage> {
-  HeadlessInAppWebView? headlessWebView;
   InAppWebViewController? _webViewController;
   String currentUrl = "";
   bool _isLoading = true;
-  bool _isWebViewReady = false;
   final TextEditingController _searchController = TextEditingController();
   bool _isSearchVisible = false;
   bool _hasSearchResults = false;
@@ -21,58 +19,20 @@ class _ScannerPageState extends State<ScannerPage> {
   @override
   void initState() {
     super.initState();
-    _setupHeadlessWebView();
-  }
-
-  void _setupHeadlessWebView() {
-    headlessWebView = HeadlessInAppWebView(
-      initialUrlRequest: URLRequest(
-        url: WebUri(
-            'https://docs.google.com/document/d/1NvEkqOjkVLhdtfWngFW6bw7aWUVssph4/preview?rm=minimal'),
-      ),
-      initialSettings: InAppWebViewSettings(
-        javaScriptEnabled: true,
-        isInspectable: true,
-      ),
-      onWebViewCreated: (controller) {
-        _webViewController = controller;
-        print('HeadlessInAppWebView created!');
-      },
-      onLoadStart: (controller, url) {
-        setState(() {
-          currentUrl = url.toString();
-          _isLoading = true;
-        });
-      },
-      onLoadStop: (controller, url) async {
-        if (mounted) {
-          setState(() {
-            currentUrl = url.toString();
-            _isLoading = false;
-            _isWebViewReady = true;
-          });
-        }
-      },
-    );
-
-    // Start the headless WebView
-    headlessWebView?.run();
   }
 
   void _performSearch(String searchText) async {
-    if (!_isWebViewReady || searchText.isEmpty) {
+    if (_webViewController == null || searchText.isEmpty) {
       setState(() => _hasSearchResults = false);
       return;
     }
 
-    if (headlessWebView?.isRunning() ?? false) {
-      final result = await _webViewController?.evaluateJavascript(
-        source: "window.find('$searchText')",
-      );
+    final result = await _webViewController?.evaluateJavascript(
+      source: "window.find('$searchText')",
+    );
 
-      if (mounted) {
-        setState(() => _hasSearchResults = result == true);
-      }
+    if (mounted) {
+      setState(() => _hasSearchResults = result == true);
     }
   }
 
@@ -132,19 +92,32 @@ class _ScannerPageState extends State<ScannerPage> {
       ),
       body: Stack(
         children: [
-          if (_isWebViewReady)
-            InAppWebView(
-              initialUrlRequest: URLRequest(
-                url: WebUri(
-                    'https://docs.google.com/document/d/1NvEkqOjkVLhdtfWngFW6bw7aWUVssph4/preview?rm=minimal'),
-              ),
-              initialSettings: InAppWebViewSettings(
-                javaScriptEnabled: true,
-              ),
-              onWebViewCreated: (controller) {
-                _webViewController = controller;
-              },
+          InAppWebView(
+            initialUrlRequest: URLRequest(
+              url: WebUri(
+                  'https://docs.google.com/document/d/1NvEkqOjkVLhdtfWngFW6bw7aWUVssph4/preview?rm=minimal'),
             ),
+            initialSettings: InAppWebViewSettings(
+              javaScriptEnabled: true,
+            ),
+            onWebViewCreated: (controller) {
+              _webViewController = controller;
+            },
+            onLoadStart: (controller, url) {
+              setState(() {
+                currentUrl = url.toString();
+                _isLoading = true;
+              });
+            },
+            onLoadStop: (controller, url) {
+              if (mounted) {
+                setState(() {
+                  currentUrl = url.toString();
+                  _isLoading = false;
+                });
+              }
+            },
+          ),
           if (_isLoading)
             const Center(
               child: CircularProgressIndicator(),
@@ -156,7 +129,6 @@ class _ScannerPageState extends State<ScannerPage> {
 
   @override
   void dispose() {
-    headlessWebView?.dispose();
     _searchController.dispose();
     super.dispose();
   }

@@ -15,29 +15,46 @@ class _WaterPageState extends State<WaterPage> {
   final _formKey = GlobalKey<FormState>();
   final _biayaController = TextEditingController();
   // Update default group ke kelompokII (yang sebelumnya rumahTangga2)
-  WaterSubscriptionGroup _selectedGroup = WaterSubscriptionGroup.kelompokII;
+  WaterSubscriptionGroup _selectedGroup = WaterSubscriptionGroup.kelompokIIIb;
   double? _calculatedUsage;
 
   void _calculateUsage() {
     if (!_formKey.currentState!.validate()) return;
 
-    final totalBiaya = double.parse(_biayaController.text.replaceAll(',', ''));
+    final targetBill = double.parse(_biayaController.text.replaceAll(',', ''));
+    // Kurangi biaya admin dari total tagihan
+    final waterOnlyBill = targetBill - WaterTariff.adminCharge;
     double estimatedUsage = 1.0;
-    double calculatedBill;
+    double calculatedWaterBill;
 
-    // Iterative calculation to find the closest usage
+    // Iterative calculation to find the closest usage for water consumption only
     do {
-      final tariff = WaterTariff.getTariff(_selectedGroup, estimatedUsage);
-      calculatedBill = (estimatedUsage * tariff) +
-          WaterTariff.adminCharge +
-          WaterTariff.maintenanceCharge;
+      double bloc1Usage = estimatedUsage <= 10 ? estimatedUsage : 10.0;
+      double bloc2Usage = estimatedUsage <= 10
+          ? 0.0
+          : (estimatedUsage <= 20 ? estimatedUsage - 10 : 10.0);
+      double bloc3Usage = estimatedUsage <= 20 ? 0.0 : estimatedUsage - 20;
 
-      if (calculatedBill < totalBiaya) {
+      calculatedWaterBill =
+          (bloc1Usage * WaterTariff.getTariff(_selectedGroup, 5)) +
+              (bloc2Usage * WaterTariff.getTariff(_selectedGroup, 15)) +
+              (bloc3Usage * WaterTariff.getTariff(_selectedGroup, 25));
+
+      if (calculatedWaterBill < waterOnlyBill) {
         estimatedUsage += 0.1;
       } else {
+        // Cek selisih dengan nilai sebelumnya
+        double prevUsageWaterBill =
+            WaterTariff.calculateBill(_selectedGroup, estimatedUsage - 0.1) -
+                WaterTariff.adminCharge;
+
+        if (calculatedWaterBill - waterOnlyBill >
+            waterOnlyBill - prevUsageWaterBill) {
+          estimatedUsage -= 0.1;
+        }
         break;
       }
-    } while (estimatedUsage < 100); // Set reasonable limit
+    } while (estimatedUsage < 100);
 
     setState(() {
       _calculatedUsage = estimatedUsage;
@@ -155,8 +172,6 @@ class _WaterPageState extends State<WaterPage> {
                 WaterResultCard(
                   usage: _calculatedUsage!,
                   group: _selectedGroup,
-                  totalBill:
-                      double.parse(_biayaController.text.replaceAll(',', '')),
                 ),
               ],
             ],

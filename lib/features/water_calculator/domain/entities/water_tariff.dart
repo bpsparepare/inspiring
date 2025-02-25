@@ -84,9 +84,9 @@ class WaterTariff {
   }
 
   // Biaya tetap per bulan
-  static const double adminCharge = 5000.0;
-  static const double maintenanceCharge = 3500.0;
-  static const double meterCharge = 2500.0;
+  static const double adminCharge = 13000.0;
+  // static const double maintenanceCharge = 3500.0;
+  // static const double meterCharge = 2500.0;
 
   static double calculateBill(WaterSubscriptionGroup group, double usage) {
     double total = 0;
@@ -104,7 +104,7 @@ class WaterTariff {
     }
 
     // Tambahkan biaya tetap
-    total += adminCharge + maintenanceCharge + meterCharge;
+    total += adminCharge;
 
     return total;
   }

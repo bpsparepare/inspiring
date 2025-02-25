@@ -1,11 +1,13 @@
 enum WaterSubscriptionGroup {
-  kelompokI('Kelompok I', 'Sosial Umum, Hidran Umum'),
-  kelompokII('Kelompok II', 'Rumah Tangga A'),
-  kelompokIIIa('Kelompok III A', 'Rumah Tangga B'),
-  kelompokIIIb('Kelompok III B', 'Instansi Pemerintah'),
-  kelompokIIIc('Kelompok III C', 'Niaga Kecil'),
-  kelompokIVa('Kelompok IV A', 'Niaga Besar'),
-  kelompokIVb('Kelompok IV B', 'Industri');
+  kelompokI('Kelompok I', 'Mesjid'),
+  kelompokII('Kelompok II', 'Panti Asuhan'),
+  kelompokIIIa('Kelompok III A', 'Rumah Tangga Tipe < 21 '),
+  kelompokIIIb(
+      'Kelompok III B', 'Rumah Tangga Tipe 21 - 150, Tidak Bertingkat'),
+  kelompokIIIc('Kelompok III C',
+      'Rumah Tangga Tipe >150 dan Bertingkat, Ruko, Praktek Dokter '),
+  kelompokIVa('Kelompok IV A', 'Luas Tanah >300, rumah dinas'),
+  kelompokIVb('Kelompok IV B', 'Industri, Rumah 700 juta keatas');
 
   final String display;
   final String description;
